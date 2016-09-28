@@ -1,2 +1,2 @@
-# hidychen.github.io
+# hidysea.github.io
 hidy's home page
