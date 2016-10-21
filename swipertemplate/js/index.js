@@ -22,8 +22,7 @@ $(function () {
         };
         $(this).parent().find("span").text(len);
     });
-
-    $(document).on("click","#preview",function () {
+    $("#preview").click(function () {
         alert("preview");
         if (imgFiles.length > 0) {
             var imgList = [];
@@ -38,7 +37,8 @@ $(function () {
             // window.location.href = "preview.html";
             window.location.href = "template/index.html";
         }
-    })
+    });
+
 });
 
 /**
