@@ -4,7 +4,6 @@
 
 var imgFiles = []; // 全局的 imgFiles 存储选择的图片文件
 var imgCountMax = 5; // 最多添加多少张照片
-imgCountMax = 10;
 
 $(function () {
     $(document).on("change","#input",function () {
