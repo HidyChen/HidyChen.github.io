@@ -26,15 +26,16 @@ $(function () {
         alert(imgFiles.length);
         if (imgFiles.length > 0) {
             var imgList = [];
+            alert("ready to cache img");
             $(".imgRow").each(function () {
                 var imgObj={};
                 imgObj.imgUrl=$(this).find(".weui_uploader_file").attr("src");
                 imgObj.imgDescr=$(this).find(".weui_textarea").val();
                 imgList.push(imgObj);
-            })
+            });
             localStorage.setItem("imgList",JSON.stringify(imgList));
-            alert("jump");
-            // window.location.href = "preview.html";
+
+            alert("ready to jump");
             window.location.href = "template/index.html";
         }
     });
