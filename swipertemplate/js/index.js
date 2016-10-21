@@ -26,14 +26,14 @@ $(function () {
         alert(imgFiles.length);
         if (imgFiles.length > 0) {
             var imgList = [];
-            alert("ready to cache img");
+            alert("ready to get img");
             $(".imgRow").each(function () {
                 var imgObj={};
                 imgObj.imgUrl=$(this).find(".weui_uploader_file").attr("src");
                 imgObj.imgDescr=$(this).find(".weui_textarea").val();
                 imgList.push(imgObj);
-                alert("cache img");
             });
+            alert("ready to save img");
             localStorage.setItem("imgList",JSON.stringify(imgList));
 
             alert("ready to jump");
