@@ -32,6 +32,7 @@ $(function () {
                 imgObj.imgUrl=$(this).find(".weui_uploader_file").attr("src");
                 imgObj.imgDescr=$(this).find(".weui_textarea").val();
                 imgList.push(imgObj);
+                alert("cache img");
             });
             localStorage.setItem("imgList",JSON.stringify(imgList));
 
