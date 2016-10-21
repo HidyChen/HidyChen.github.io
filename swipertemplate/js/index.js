@@ -22,21 +22,18 @@ $(function () {
         $(this).parent().find("span").text(len);
     });
     $("#preview").click(function () {
-        alert(imgFiles.length);
         if (imgFiles.length > 0) {
             var imgList = [];
-            alert("ready to get img");
             $(".imgRow").each(function () {
                 var imgObj={};
                 imgObj.imgUrl=$(this).find(".weui_uploader_file").attr("src");
                 imgObj.imgDescr=$(this).find(".weui_textarea").val();
                 imgList.push(imgObj);
             });
-            alert("ready to save img");
+            // 注意: 使用 localStorage 存储数据 限制 5M 以内
             localStorage.removeItem("imgList");
-            sessionStorage.setItem("imgList",JSON.stringify(imgList));
+            localStorage.setItem("imgList",JSON.stringify(imgList));
 
-            alert("ready to jump");
             window.location.href = "template/index.html";
         }
     });

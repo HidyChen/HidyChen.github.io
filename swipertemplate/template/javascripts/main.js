@@ -8,7 +8,7 @@
         var text_ani_names  = ["bounceInRight","bounceInUp","zoomInRight","zoomInUp","flipInY","lightSpeedIn","fadeInRightBig","fadeInUpBig","rotateInUpRight","rotateInUpLeft","slideInRight","slideInUp"];
         var bg_colors = ["#ED5565","#FC6E51","#FFCES4","#A0D468","#48CFAD","#4FC1E9","#5D9CEC","#AC92EC","#EC87C0"];
         // 获取图片列表
-        var imgList = JSON.parse(sessionStorage.getItem("imgList"));
+        var imgList = JSON.parse(localStorage.getItem("imgList"));
 
         var swiperWrapper = $(".swiper-wrapper");
         for (var i = 0; i < imgList.length; i++) {
