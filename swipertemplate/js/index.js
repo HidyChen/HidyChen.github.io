@@ -33,7 +33,7 @@ $(function () {
                 imgList.push(imgObj);
             })
             localStorage.setItem("imgList",JSON.stringify(imgList));
-
+            alert("jump");
             // window.location.href = "preview.html";
             window.location.href = "template/index.html";
         }
