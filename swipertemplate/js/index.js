@@ -24,6 +24,7 @@ $(function () {
     });
 
     $(document).on("click","#preview",function () {
+        alert("preview");
         if (imgFiles.length > 0) {
             var imgList = [];
             $(".imgRow").each(function () {
