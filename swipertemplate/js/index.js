@@ -23,7 +23,7 @@ $(function () {
         $(this).parent().find("span").text(len);
     });
     $("#preview").click(function () {
-        alert("preview");
+        alert(imgFiles.length);
         if (imgFiles.length > 0) {
             var imgList = [];
             $(".imgRow").each(function () {
