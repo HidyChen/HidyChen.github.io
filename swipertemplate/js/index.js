@@ -36,7 +36,7 @@ $(function () {
         auto_start: false,                 //选择文件后自动上传，若关闭需要自己绑定事件触发上传
         init: {
             'FilesAdded': function(up, files) {
-
+                alert("FilesAdded");
                 // 假设 "listView" 是将要展示图片的 div
                 var listView = $("#listView");
                 plupload.each(files, function(file) {
