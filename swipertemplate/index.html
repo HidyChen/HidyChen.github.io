@@ -11,7 +11,9 @@
     <link rel="stylesheet" href="weui/style/weui.css"/>
     <link rel="stylesheet" href="weui/example/example.css">
     <link rel="stylesheet" href="css/index.css"/>
+
     <style>
+        /*使用七牛时要添加*/
         .weui_uploader_input{
             z-index: 0;
         }
@@ -35,8 +37,12 @@
 
             <div class="cDiv clearfix" id="inputDiv">
                 <div class="weui_uploader_input_wrp" id="container">
-                    <a class="weui_uploader_input" id="pickfiles"></a>
+                    <!--不用七牛上传服务时 要使用 <input> -->
                     <!--<input class="weui_uploader_input" id="pickfiles" type="file" accept="image/*" multiple="multiple" />-->
+
+                    <!--使用七牛上传,七牛会在 id="pickfiles" 控件上添加 <file> -->
+                    <!--另 WeUI 的"weui_uploader_input"会盖住<input> 记得修改 .weui_uploader_input {z-index: 0;}-->
+                    <a class="weui_uploader_input" id="pickfiles"></a>
                 </div>
             </div>
         </div>
