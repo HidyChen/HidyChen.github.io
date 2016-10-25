@@ -19,6 +19,7 @@ $(function () {
     var uploader = Qiniu.uploader({
         runtimes: 'html5,flash,html4',    //上传模式,依次退化
         browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
+        // 此处必须由服务端提供获取 uptoken 的url,使用别人的 uptoken_url 存在跨域问题
         // uptoken_url: 'http://banapi.seenvoice.com/getTokenCover',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
         uptoken : 'aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
         unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK为自动生成上传成功后的key（文件名）。
@@ -47,6 +48,7 @@ $(function () {
 
                     var imgFile = file.getNative();
                     var imgSrc = getObjectURL(imgFile);
+                    alert(imgSrc);
                     var imgRow = getImageRowForUpload(imgSrc,"",file.id);
                     listView.append(imgRow);
 
@@ -128,6 +130,7 @@ $(function () {
             }
         }
     });
+    uploader.token = "";
     // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
     // uploader 为一个plupload对象，继承了所有plupload的方法，参考http://plupload.com/docs
 
