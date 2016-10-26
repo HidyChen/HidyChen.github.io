@@ -15,26 +15,36 @@ $(function () {
     //     var input = $(this)[0]; // input 控件
     //     imagesChanged(input);
     // });
+    var uptoken;
 
-    // 通过 JSONP 跨域获取 uptoken, 初始化 uploader;
-    $.ajax({
-        type: "get",
-        dataType:"jsonp",
-        data: {
-            //上传参数
-            "jsonp":1
-        },
-        url: 'http://banapi.seenvoice.com/getTokenCover', //接口地址,
-        jsonp: "callback",//传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)
-        async: false,
-        success: function (res) {
-            var uptoken = res.uptoken;
-            console.log(uptoken);
+    // uptoken = "aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9";
+    if (uptoken) {
+        // 初始化 uploader
+        initUploader(uptoken);
+    } else {
+        // 通过 JSONP 跨域获取 uptoken, 初始化 uploader;
+        $.ajax({
+            // url: "http://banapi.seenvoice.com/getTokenCover", //接口地址,
+            // 服务端提供的接口地址
+            url: "https://www.baidu.com/",
+            type: "get",
+            dataType:"jsonp",
+            data: {
+                //上传参数
+                "jsonp":1
+            },
+            jsonp: "callback",//传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)
+            async: false,
+            success: function (res) {
+                var uptoken = res.uptoken;
+                console.log(uptoken);
 
-            // 初始化 uploader
-            initUploader(uptoken);
-        }
-    });
+                // 初始化 uploader
+                initUploader(uptoken);
+            }
+        });
+    }
+
 
     function initUploader(uptoken) {
         // 引入Plupload 、qiniu.js后
