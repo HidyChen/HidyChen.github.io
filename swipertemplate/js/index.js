@@ -24,9 +24,9 @@ $(function () {
     } else {
         // 通过 JSONP 跨域获取 uptoken, 初始化 uploader;
         $.ajax({
-            // url: "http://banapi.seenvoice.com/getTokenCover", //接口地址,
+            url: "http://banapi.seenvoice.com/getTokenCover", //接口地址,
             // 服务端提供的接口地址
-            url: "https://www.baidu.com/",
+            // url: "https://www.baidu.com/",
             type: "get",
             dataType:"jsonp",
             data: {
