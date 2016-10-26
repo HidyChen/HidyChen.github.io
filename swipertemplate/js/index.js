@@ -16,17 +16,17 @@ $(function () {
     //     imagesChanged(input);
     // });
     var uptoken;
-
-    // uptoken = "aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9";
+    // uptoken 会失效
+    uptoken = "aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9";
     if (uptoken) {
         // 初始化 uploader
         initUploader(uptoken);
     } else {
         // 通过 JSONP 跨域获取 uptoken, 初始化 uploader;
         $.ajax({
-            url: "http://banapi.seenvoice.com/getTokenCover", //接口地址,
             // 服务端提供的接口地址
-            // url: "https://www.baidu.com/",
+            url: "https://www.baidu.com/",
+            // url: "http://banapi.seenvoice.com/getTokenCover", //接口地址,
             type: "get",
             dataType:"jsonp",
             data: {
@@ -57,28 +57,6 @@ $(function () {
             // uptoken_url: 'http://banapi.seenvoice.com/getTokenCover',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
             // uptoken : 'aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
 
-            // uptoken_func: function () {
-            //     var uptoken;
-            //     var res = $.ajax({
-            //         type: "get",
-            //         dataType:"jsonp",
-            //         data: {
-            //             //上传参数
-            //             "jsonp":1
-            //         },
-            //         url: 'http://banapi.seenvoice.com/getTokenCover', //接口地址,
-            //         jsonp: "callback",//传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)
-            //         jsonpCallback:"flightHandler",//自定义的jsonp回调函数名称，默认为jQuery自动生成的随机函数名，也可以写"?"，jQuery会自动为你处理数据
-            //         async: false,
-            //         success: function (res) {
-            //             console.log(res);
-            //             uptoken = res.uptoken;
-            //         }
-            //     });
-            //     // 异步获取到 token 不能 return;
-            //     console.log(uptoken);
-            //     return uptoken;
-            // },
             get_new_uptoken: false,  //设置上传文件的时候是否每次都重新获取新的token
             unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK为自动生成上传成功后的key（文件名）。
             save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK会忽略对key的处理
