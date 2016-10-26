@@ -7,6 +7,8 @@ var imgFiles = []; // 全局的 imgFiles 存储选择的图片文件
 var up_files = []; // 全局的 up_files 存储uploader队列
 var img_urls = []; // 全局的 up_files 存储uploader队列
 
+var uploader;
+
 $(function () {
     // 监听 input 变化事件
     // $(document).on("change","#pickfiles",function () {
@@ -14,125 +16,169 @@ $(function () {
     //     imagesChanged(input);
     // });
 
-    // 初始化 uploader
-    // 引入Plupload 、qiniu.js后
-    var uploader = Qiniu.uploader({
-        runtimes: 'html5,flash,html4',    //上传模式,依次退化
-        browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
-        // 此处必须由服务端提供获取 uptoken 的url,使用别人的 uptoken_url 存在跨域问题
-        // uptoken_url: 'http://banapi.seenvoice.com/getTokenCover',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
-        uptoken : 'aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
-        unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK为自动生成上传成功后的key（文件名）。
-        save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK会忽略对key的处理
-        domain: 'http://img.seenvoice.com/',   //bucket 域名，下载资源时用到，**必需**
-        get_new_uptoken: false,  //设置上传文件的时候是否每次都重新获取新的token
-        container: 'container',           //上传区域DOM ID，默认是browser_button的父元素，
-        max_file_size: '100mb',           //最大文件体积限制
-        flash_swf_url: 'js/plupload/Moxie.swf',  //引入flash,相对路径
-        max_retries: 3,                   //上传失败最大重试次数
-        dragdrop: true,                   //开启可拖曳上传
-        drop_element: 'container',        //拖曳上传区域元素的ID，拖曳文件或文件夹后可触发上传
-        chunk_size: '4mb',                //分块上传时，每片的体积
-        auto_start: false,                 //选择文件后自动上传，若关闭需要自己绑定事件触发上传
-        init: {
-            'FilesAdded': function(up, files) {
+    // 通过 JSONP 跨域获取 uptoken, 初始化 uploader;
+    $.ajax({
+        type: "get",
+        dataType:"jsonp",
+        data: {
+            //上传参数
+            "jsonp":1
+        },
+        url: 'http://banapi.seenvoice.com/getTokenCover', //接口地址,
+        jsonp: "callback",//传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)
+        async: false,
+        success: function (res) {
+            var uptoken = res.uptoken;
+            console.log(uptoken);
 
-                // 假设 "listView" 是将要展示图片的 div
-                var listView = $("#listView");
-                plupload.each(files, function(file) {
-                    // 文件添加进队列后,处理相关的事情
-                    // uploader.files: 待上传队列; files: 新加入的文件数组; file: 新加入的文件;
-
-                    up_files.push(file);
-                    uploader.files = up_files;
-
-                    var imgFile = file.getNative();
-                    var imgSrc = getObjectURL(imgFile);
-                    var imgRow = getImageRowForUpload(imgSrc,"",file.id);
-                    listView.append(imgRow);
-
-                    // 最多添加 imgCountMax 张照片
-                    if (up_files.length >= imgCountMax) {
-                        $("#inputDiv").hide();
-                        return false; // break 的作用
-                    }
-                });
-                up.files = up_files;
-                // 切换 preview 按钮状态
-                togglePreviewBtnDisable(up_files);
-            },
-            'BeforeUpload': function(up, file) {
-                // 每个文件上传前,处理相关的事情
-                var uploaderID = file.id;
-                var progressDiv = $("#" + uploaderID);
-                var img = progressDiv.parent();
-                img.addClass("weui_uploader_status");
-            },
-            'UploadProgress': function(up, file) {
-                // 每个文件上传时,处理相关的事情
-                var uploaderID = file.id;
-                var progressDiv = $("#" + uploaderID);
-                progressDiv.html(file.percent + "%");
-            },
-            'FileUploaded': function(up, file, info) {
-                // 每个文件上传成功后,处理相关的事情
-                // 其中 info 是文件上传成功后，服务端返回的json，形式如
-                // {
-                //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
-                //    "key": "gogopher.jpg"
-                //  }
-                // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
-
-                var domain = up.getOption('domain');
-                var res = JSON.parse(info);// parseJSON(info);
-                var sourceLink = domain + res.key; // 获取上传成功后的文件的Url
-                console.log(sourceLink);
-                img_urls.push(sourceLink);
-
-                var uploaderID = file.id;
-                var progressDiv = $("#" + uploaderID);
-                progressDiv.parent().removeClass("weui_uploader_status");
-                progressDiv.hide();
-            },
-            'Error': function(up, err, errTip) {
-                //上传出错时,处理相关的事情
-                console.log(err,errTip);
-                alert(errTip);
-            },
-            'UploadComplete': function() {
-                //队列文件处理完毕后,处理相关的事情
-                console.log("UploadComplete");
-
-                var imgList = [];
-                $(".imgRow").each(function () {
-                    var imgObj={};
-                    imgObj.imgUrl=$(this).find(".weui_uploader_file").attr("src");
-                    imgObj.imgDescr=$(this).find(".weui_textarea").val();
-                    imgList.push(imgObj);
-                });
-                for (var i = 0; i < up_files.length; i++) {
-                    imgList[i].imgUrl = img_urls[i];
-                }
-                // 注意: 使用 localStorage 存储数据 限制 5M 以内
-                localStorage.removeItem("imgList");
-                localStorage.setItem("imgList",JSON.stringify(imgList));
-
-                window.location.href = "template/index.html";
-            },
-            'Key': function(up, file) {
-                // 若想在前端对每个文件的key进行个性化处理，可以配置该函数
-                // 该配置必须要在 unique_names: false , save_key: false 时才生效
-
-                var key = "";
-                // do something with key here
-                return key
-            }
+            // 初始化 uploader
+            initUploader(uptoken);
         }
     });
-    uploader.token = "";
-    // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
-    // uploader 为一个plupload对象，继承了所有plupload的方法，参考http://plupload.com/docs
 
+    function initUploader(uptoken) {
+        // 引入Plupload 、qiniu.js后
+        uploader = Qiniu.uploader({
+            runtimes: 'html5,flash,html4',    //上传模式,依次退化
+            browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
+            uptoken : uptoken,
+
+            // 此处必须由服务端提供获取 uptoken 的url,使用别人的 uptoken_url 存在跨域问题
+            // uptoken_url: 'http://banapi.seenvoice.com/getTokenCover',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
+            // uptoken : 'aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
+
+            // uptoken_func: function () {
+            //     var uptoken;
+            //     var res = $.ajax({
+            //         type: "get",
+            //         dataType:"jsonp",
+            //         data: {
+            //             //上传参数
+            //             "jsonp":1
+            //         },
+            //         url: 'http://banapi.seenvoice.com/getTokenCover', //接口地址,
+            //         jsonp: "callback",//传递给请求处理程序或页面的，用以获得jsonp回调函数名的参数名(一般默认为:callback)
+            //         jsonpCallback:"flightHandler",//自定义的jsonp回调函数名称，默认为jQuery自动生成的随机函数名，也可以写"?"，jQuery会自动为你处理数据
+            //         async: false,
+            //         success: function (res) {
+            //             console.log(res);
+            //             uptoken = res.uptoken;
+            //         }
+            //     });
+            //     // 异步获取到 token 不能 return;
+            //     console.log(uptoken);
+            //     return uptoken;
+            // },
+            get_new_uptoken: false,  //设置上传文件的时候是否每次都重新获取新的token
+            unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK为自动生成上传成功后的key（文件名）。
+            save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK会忽略对key的处理
+            domain: 'http://img.seenvoice.com/',   //bucket 域名，下载资源时用到，**必需**
+            container: 'container',           //上传区域DOM ID，默认是browser_button的父元素，
+            max_file_size: '100mb',           //最大文件体积限制
+            flash_swf_url: 'js/plupload/Moxie.swf',  //引入flash,相对路径
+            max_retries: 3,                   //上传失败最大重试次数
+            dragdrop: true,                   //开启可拖曳上传
+            drop_element: 'container',        //拖曳上传区域元素的ID，拖曳文件或文件夹后可触发上传
+            chunk_size: '4mb',                //分块上传时，每片的体积
+            auto_start: false,                 //选择文件后自动上传，若关闭需要自己绑定事件触发上传
+            init: {
+                'FilesAdded': function(up, files) {
+
+                    // 假设 "listView" 是将要展示图片的 div
+                    var listView = $("#listView");
+                    plupload.each(files, function(file) {
+                        // 文件添加进队列后,处理相关的事情
+                        // uploader.files: 待上传队列; files: 新加入的文件数组; file: 新加入的文件;
+
+                        up_files.push(file);
+                        uploader.files = up_files;
+
+                        var imgFile = file.getNative();
+                        var imgSrc = getObjectURL(imgFile);
+                        var imgRow = getImageRowForUpload(imgSrc,"",file.id);
+                        listView.append(imgRow);
+
+                        // 最多添加 imgCountMax 张照片
+                        if (up_files.length >= imgCountMax) {
+                            $("#inputDiv").hide();
+                            return false; // break 的作用
+                        }
+                    });
+                    up.files = up_files;
+                    // 切换 preview 按钮状态
+                    togglePreviewBtnDisable(up_files);
+                },
+                'BeforeUpload': function(up, file) {
+                    // 每个文件上传前,处理相关的事情
+                    var uploaderID = file.id;
+                    var progressDiv = $("#" + uploaderID);
+                    var img = progressDiv.parent();
+                    img.addClass("weui_uploader_status");
+                },
+                'UploadProgress': function(up, file) {
+                    // 每个文件上传时,处理相关的事情
+                    var uploaderID = file.id;
+                    var progressDiv = $("#" + uploaderID);
+                    progressDiv.html(file.percent + "%");
+                },
+                'FileUploaded': function(up, file, info) {
+                    // 每个文件上传成功后,处理相关的事情
+                    // 其中 info 是文件上传成功后，服务端返回的json，形式如
+                    // {
+                    //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
+                    //    "key": "gogopher.jpg"
+                    //  }
+                    // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
+
+                    var domain = up.getOption('domain');
+                    var res = JSON.parse(info);// parseJSON(info);
+                    var sourceLink = domain + res.key; // 获取上传成功后的文件的Url
+                    console.log(sourceLink);
+                    img_urls.push(sourceLink);
+
+                    var uploaderID = file.id;
+                    var progressDiv = $("#" + uploaderID);
+                    progressDiv.parent().removeClass("weui_uploader_status");
+                    progressDiv.hide();
+                },
+                'Error': function(up, err, errTip) {
+                    //上传出错时,处理相关的事情
+                    console.log(err,errTip);
+                    alert(errTip);
+                },
+                'UploadComplete': function() {
+                    //队列文件处理完毕后,处理相关的事情
+                    console.log("UploadComplete");
+
+                    var imgList = [];
+                    $(".imgRow").each(function () {
+                        var imgObj={};
+                        imgObj.imgUrl=$(this).find(".weui_uploader_file").attr("src");
+                        imgObj.imgDescr=$(this).find(".weui_textarea").val();
+                        imgList.push(imgObj);
+                    });
+                    for (var i = 0; i < up_files.length; i++) {
+                        imgList[i].imgUrl = img_urls[i];
+                    }
+                    // 注意: 使用 localStorage 存储数据 限制 5M 以内
+                    localStorage.removeItem("imgList");
+                    localStorage.setItem("imgList",JSON.stringify(imgList));
+
+                    window.location.href = "template/index.html";
+                },
+                'Key': function(up, file) {
+                    // 若想在前端对每个文件的key进行个性化处理，可以配置该函数
+                    // 该配置必须要在 unique_names: false , save_key: false 时才生效
+
+                    var key = "";
+                    // do something with key here
+                    return key
+                }
+            }
+        });
+        // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
+        // uploader 为一个plupload对象，继承了所有plupload的方法，参考http://plupload.com/docs
+    }
 
     // 输入框文字变化事件
     $(document).on("keyup",".weui_textarea",function () {
