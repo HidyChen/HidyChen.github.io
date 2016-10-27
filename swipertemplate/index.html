@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="css/index.css"/>
 
     <style>
-        /*使用七牛时要添加*/
-        .weui_uploader_input{
+        /*使用七牛时添加,不用七牛时注释*/
+        .qiniu_uploader_pickfiles{
             z-index: 0;
         }
     </style>
@@ -37,12 +37,13 @@
 
             <div class="cDiv clearfix" id="inputDiv">
                 <div class="weui_uploader_input_wrp" id="container">
-                    <!--不用七牛上传服务时 要使用 <input> -->
-                    <!--<input class="weui_uploader_input" id="pickfiles" type="file" accept="image/*" multiple="multiple" />-->
+                    <!--在 js 中判断显示哪一个-->
+                    <!--(1)不用七牛上传服务时 要使用 <input> -->
+                    <input class="weui_uploader_input" id="inputfiles" type="file" accept="image/*" multiple="multiple" />
 
-                    <!--使用七牛上传,七牛会在 id="pickfiles" 控件上添加 <file>,在苹果手机上七牛会接收不到图片 -->
+                    <!--(2)使用七牛上传时使用,七牛会在 id="pickfiles" 控件上添加 <file>,在苹果手机上七牛会接收不到图片 -->
                     <!--另 WeUI 的"weui_uploader_input"会盖住<input> 记得修改 .weui_uploader_input {z-index: 0;}-->
-                    <a class="weui_uploader_input" id="pickfiles"></a>
+                    <a class="weui_uploader_input qiniu_uploader_pickfiles" id="pickfiles"></a>
                 </div>
             </div>
         </div>
@@ -57,8 +58,10 @@
 
 <script src="js/jquery.min.js"></script>
 <script src="js/common.js"></script>
+<!--七牛上传-->
 <script src="module/plupload/plupload.full.min.js"></script>
 <script src="module/qiniu/qiniu.js"></script>
+
 <script src="js/index.js"></script>
 
 </html>

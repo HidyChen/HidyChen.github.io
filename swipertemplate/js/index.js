@@ -5,28 +5,69 @@
 var imgCountMax = 5; // 最多添加多少张照片
 var imgFiles = []; // 全局的 imgFiles 存储选择的图片文件
 var up_files = []; // 全局的 up_files 存储uploader队列
-var img_urls = []; // 全局的 up_files 存储uploader队列
+var img_urls = []; // 全局的 img_urls 存储上传后imgUrl
+
+var useQiniuUpload = true; // 预览前,是否使用七牛上传图片
+var isCrossDomain = true; // uptoken_url 是否跨域
+var isMixedContent = false; // 是否存在 HTTPS 和 HTTP mixed_content (比如 domain 使用 HTTPS,而uptoken_url使用的是 HTTP)
 
 var uploader;
+var qiniu_uptoken = ""; // qiniu uptoken
+var qiniu_uptoken_url = "http://banapi.seenvoice.com/getTokenCover"; //qiniu uptoken_url 接口地址
+// var qiniu_uptoken_url = "https://www.baidu.com/";
 
 $(function () {
-    // 监听 input 变化事件
-    // $(document).on("change","#pickfiles",function () {
-    //     var input = $(this)[0]; // input 控件
-    //     imagesChanged(input);
-    // });
-    var uptoken;
-    // uptoken 会失效
-    uptoken = "aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9";
-    if (uptoken) {
-        // 初始化 uploader
-        initUploader(uptoken);
+
+    // (1)是否使用七牛上传 切换不同 'input' 控件显示
+    if (useQiniuUpload) {
+        $("#inputfiles").hide();
+        $("#pickfiles").show();
     } else {
-        // 通过 JSONP 跨域获取 uptoken, 初始化 uploader;
+        $("#inputfiles").show();
+        $("#pickfiles").hide();
+    }
+
+    // (2)是否使用七牛上传 监听不同 'input' 控件事件
+    if (useQiniuUpload) {
+        // 初始化七牛上传 uploader
+        if (qiniu_uptoken_url) {
+            if (isCrossDomain) {
+                if (!isMixedContent) {
+                    getUptokenCrossDomain();
+                } else {
+                    // qiniu_uptoken 过期会失效 可能上传不成功
+                    qiniu_uptoken = "aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9";
+                    // 初始化 uploader
+                    initUploader();
+                }
+            } else {
+                // 初始化 uploader
+                initUploader();
+            }
+        } else if (qiniu_uptoken) {
+            // 初始化 uploader
+            initUploader();
+        } else {
+            // qiniu_uptoken 过期会失效 可能上传不成功
+            qiniu_uptoken = "aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9";
+            // 初始化 uploader
+            initUploader();
+        }
+    } else {
+        // 监听 input 变化事件
+        $(document).on("change","#inputfiles",function () {
+            var input = $(this)[0]; // input 控件
+            imagesChanged(input);
+        });
+    }
+
+    // 跨域获取 uptoken 并初始化 uploader
+    function getUptokenCrossDomain() {
+        // 通过 JSONP 跨域获取 uptoken;
         $.ajax({
             // 服务端提供的接口地址
-            url: "https://www.baidu.com/",
-            // url: "http://banapi.seenvoice.com/getTokenCover", //接口地址,
+            // url: "https://www.baidu.com/",
+            url: qiniu_uptoken_url, //接口地址,
             type: "get",
             dataType:"jsonp",
             data: {
@@ -38,23 +79,20 @@ $(function () {
             success: function (res) {
                 var uptoken = res.uptoken;
                 console.log(uptoken);
-
                 // 初始化 uploader
-                initUploader(uptoken);
+                qiniu_uptoken = uptoken;
+                initUploader();
             }
         });
     }
-
-
-    function initUploader(uptoken) {
-        // 引入Plupload 、qiniu.js后
-        uploader = Qiniu.uploader({
+    // 通过 uptoken 或者 uptoken_url 初始化 uploader
+    function initUploader() {
+        var qiniu_up = {
             runtimes: 'html5,flash,html4',    //上传模式,依次退化
             browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
-            uptoken : uptoken,
 
-            // 此处必须由服务端提供获取 uptoken 的url,使用别人的 uptoken_url 存在跨域问题
-            // uptoken_url: 'http://banapi.seenvoice.com/getTokenCover',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
+            // uptoken_url 由服务端提供获取 uptoken 的url,使用别人的 uptoken_url 存在跨域问题
+            // uptoken_url: 'https://www.baidu.com/',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
             // uptoken : 'aSmuxMCM4nOzDsfHKUDAUk3MMYbua6C3HyxpqRfv:tp-yB3vU05JSuD6mimaVhvMMb-g=:eyJzY29wZSI6ImNvdmVyIiwiZGVhZGxpbmUiOjE0NzczMDkyNTF9', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
 
             get_new_uptoken: false,  //设置上传文件的时候是否每次都重新获取新的token
@@ -163,7 +201,15 @@ $(function () {
                     return key
                 }
             }
-        });
+        };
+        if (qiniu_uptoken_url && !isCrossDomain) {
+            qiniu_up.uptoken_url = qiniu_uptoken_url;
+        } else {
+            qiniu_up.uptoken = qiniu_uptoken;
+        }
+
+        // 引入Plupload 、qiniu.js后
+        uploader = Qiniu.uploader(qiniu_up);
         // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
         // uploader 为一个plupload对象，继承了所有plupload的方法，参考http://plupload.com/docs
     }
@@ -179,29 +225,31 @@ $(function () {
         };
         $(this).parent().find("span").text(len);
     });
+
     // 点击预览事件
     $("#preview").click(function () {
-        // (1) 上传图片 ==》 上传后跳转到预览界面
-        if (uploader.total.percent == 0) {
-            uploader.start();
-        }
-        return;
+        if (useQiniuUpload) {
+            // (1) 上传图片 ==》 上传后跳转到预览界面
+            if (uploader.total.percent == 0) {
+                uploader.start();
+            }
+        } else {
+            // (2)本地存储图片 并跳转到预览页面
+            // 直接存储图片到本地有大小限制,采取先上传的方式更好
+            if (imgFiles.length > 0) {
+                var imgList = [];
+                $(".imgRow").each(function () {
+                    var imgObj={};
+                    imgObj.imgUrl=$(this).find(".weui_uploader_file").attr("src");
+                    imgObj.imgDescr=$(this).find(".weui_textarea").val();
+                    imgList.push(imgObj);
+                });
+                // 注意: 使用 localStorage 存储数据 限制 5M 以内
+                localStorage.removeItem("imgList");
+                localStorage.setItem("imgList",JSON.stringify(imgList));
 
-        // (2)本地存储图片 并跳转到预览页面
-        // 直接存储图片到本地有大小限制,采取先上传的方式更好
-        if (imgFiles.length > 0) {
-            var imgList = [];
-            $(".imgRow").each(function () {
-                var imgObj={};
-                imgObj.imgUrl=$(this).find(".weui_uploader_file").attr("src");
-                imgObj.imgDescr=$(this).find(".weui_textarea").val();
-                imgList.push(imgObj);
-            });
-            // 注意: 使用 localStorage 存储数据 限制 5M 以内
-            localStorage.removeItem("imgList");
-            localStorage.setItem("imgList",JSON.stringify(imgList));
-
-            window.location.href = "template/index.html";
+                window.location.href = "template/index.html";
+            }
         }
     });
 });
