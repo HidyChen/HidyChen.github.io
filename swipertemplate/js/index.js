@@ -17,7 +17,6 @@ var qiniu_uptoken_url = "http://banapi.seenvoice.com/getTokenCover"; //qiniu upt
 // var qiniu_uptoken_url = "https://www.baidu.com/";
 
 $(function () {
-
     // (1)是否使用七牛上传 切换不同 'input' 控件显示
     if (useQiniuUpload) {
         $("#inputfiles").hide();
