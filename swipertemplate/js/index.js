@@ -9,7 +9,7 @@ var img_urls = []; // 全局的 img_urls : 存储上传后imgUrl列表
 
 var useQiniuUpload = true; // 预览前,是否使用七牛上传图片
 var isCrossDomain = true; // uptoken_url 是否跨域
-var isMixedContent = true; // 是否存在 HTTPS 和 HTTP mixed_content (比如 domain 使用 HTTPS,而uptoken_url使用的是 HTTP)
+var isMixedContent = false; // 是否存在 HTTPS 和 HTTP mixed_content (比如 domain 使用 HTTPS,而uptoken_url使用的是 HTTP)
 
 var uploader;
 var qiniu_uptoken = ""; // qiniu uptoken
@@ -214,6 +214,15 @@ $(function () {
     }
 
     // 输入框文字变化事件
+    $(document).on("keydown",".weui_textarea",function () {
+        // 输入框文字长度
+        var maxLength = 50;
+        var len = $(this).val().length;
+        if (len > maxLength) {
+            $(this).val($(this).val().substring(0, maxLength));
+            len = maxLength;
+        };
+    });
     $(document).on("keyup",".weui_textarea",function () {
         // 输入框文字长度
         var maxLength = 50;
